@@ -13,17 +13,18 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("/films")
 public class FilmController {
     private Long counter = 1L;
     Map<Long, Film> films = new HashMap<>();
 
-    @GetMapping("/films")
+    @GetMapping()
     public List<Film> getFilms() {
         log.info("Получаем фильмы");
         return new ArrayList<>(films.values());
     }
 
-    @PostMapping("/films")
+    @PostMapping()
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Create film");
         film.setId(counter++);
@@ -31,7 +32,7 @@ public class FilmController {
         return film;
     }
 
-    @PutMapping("/films")
+    @PutMapping()
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Update film");
         if (films.containsKey(film.getId())) {
