@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.EntityNotExistException;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
@@ -39,7 +39,7 @@ public class FilmController {
             films.put(film.getId(), film);
             return film;
         } else {
-            throw new EntityNotExistException("PutMapping, в базе нет такого фильма");
+            throw new EntityNotFoundException("PutMapping, в базе нет такого фильма");
         }
     }
 }
