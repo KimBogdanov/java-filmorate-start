@@ -10,7 +10,10 @@ import java.lang.annotation.RetentionPolicy;
 @Past
 public @interface MinimumDate {
     String message() default "Дата не должна быть раньше {minDate}";
+
     Class<?>[] groups() default {};
+
     Class<?>[] payload() default {};
+
     String minDate();
 }
