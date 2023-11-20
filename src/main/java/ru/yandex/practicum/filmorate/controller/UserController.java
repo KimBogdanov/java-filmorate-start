@@ -26,14 +26,14 @@ public class UserController {
 
     @PostMapping()
     public User createUsers(@Valid @RequestBody User user) {
-        log.info("Создаем юзера id= " + counter);
+        log.info("Создаем юзера id=" + counter);
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
-            log.info("У юзера нет имени");
+            log.info("Имя не указано, будет назначено из логина=" + user.getLogin());
         }
-        log.info("Юзер создан id = " + counter);
         user.setId(counter++);
         users.put(user.getId(), user);
+        log.info(String.format("User id=%s создан", user.getId()));
         return user;
     }
 
@@ -43,7 +43,7 @@ public class UserController {
             users.put(user.getId(), user);
             return user;
         } else {
-            throw new EntityNotFoundException("UpdateUser, user not found");
+            throw new EntityNotFoundException(String.format("UpdateUser, user id=%s not found", user.getId()));
         }
     }
 }

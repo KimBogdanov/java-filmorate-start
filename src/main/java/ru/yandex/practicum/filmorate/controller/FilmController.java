@@ -26,20 +26,20 @@ public class FilmController {
 
     @PostMapping()
     public Film createFilm(@Valid @RequestBody Film film) {
-        log.info("Create film");
         film.setId(counter++);
         films.put(film.getId(), film);
+        log.info("Create film id= " + film.getId());
         return film;
     }
 
     @PutMapping()
     public Film updateFilm(@Valid @RequestBody Film film) {
-        log.info("Update film");
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);
+            log.info("Update film id=" + film.getId());
             return film;
         } else {
-            throw new EntityNotFoundException("PutMapping, в базе нет такого фильма");
+            throw new EntityNotFoundException("PutMapping, в базе нет фильма с id=" + film.getId());
         }
     }
 }
