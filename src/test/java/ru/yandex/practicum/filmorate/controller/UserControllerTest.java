@@ -1,7 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.FilmorateApplication;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -9,14 +13,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@SpringBootTest
 class UserControllerTest {
+    @Autowired
     UserController userController;
-
-    @BeforeEach
-    public void setUp() {
-        this.userController = new UserController();
-    }
 
     @Test
     void shouldReturnEmptyList() {
@@ -26,27 +26,27 @@ class UserControllerTest {
 
     @Test
     void shouldCreateUsers() {
-        User user = userController.createUsers(new User("mail@mail.ru", "Login", "Name",
+        User user = userController.createUser(new User("mail@mail.ru", "Login", "Name",
                 LocalDate.of(1989, 10, 5)));
-        assertEquals(user, userController.users.get(user.getId()));
+        assertTrue(userController.getUsers().contains(user));
     }
 
     @Test
     void shouldCreateTenUsers() {
         for (int i = 0; i < 10; i++) {
-            userController.createUsers(new User("mail@mail.ru", "Login", "Name",
+            userController.createUser(new User("mail@mail.ru", "Login", "Name",
                     LocalDate.of(1989, 10, 5)));
         }
-        assertEquals(10, userController.users.size());
+        assertEquals(10, userController.getUsers().size());
     }
 
     @Test
     void shouldAddNameIfExist() {
-        User user = userController.createUsers(new User("mail@mail.ru", "Login", " ",
+        User user = userController.createUser(new User("mail@mail.ru", "Login", " ",
                 LocalDate.of(1989, 10, 5)));
         assertEquals(user.getLogin(), user.getName());
 
-        User user1 = userController.createUsers(new User("mail@mail.ru", "Login", null,
+        User user1 = userController.createUser(new User("mail@mail.ru", "Login", null,
                 LocalDate.of(1989, 10, 5)));
         assertEquals(user1.getLogin(), user1.getName());
     }

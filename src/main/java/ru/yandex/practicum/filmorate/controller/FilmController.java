@@ -1,45 +1,65 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private Long counter = 1L;
-    Map<Long, Film> films = new HashMap<>();
+    FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService, UserService userService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping()
     public List<Film> getFilms() {
-        log.info("Получаем фильмы");
-        return new ArrayList<>(films.values());
+        log.info("getFilms {}");
+        return filmService.getFilms();
+    }
+
+    @GetMapping("/films/popular")
+    public List<Film> getPopularFilms(@RequestParam Integer count) {
+        return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable Long id) {
+        return filmService.getFilmById(id);
     }
 
     @PostMapping()
     public Film createFilm(@Valid @RequestBody Film film) {
-        film.setId(counter++);
-        films.put(film.getId(), film);
-        log.info("Create film id= " + film.getId());
-        return film;
+        log.info("createFilm {}" + film.getId());
+        return filmService.createFilm(film);
     }
 
     @PutMapping()
     public Film updateFilm(@Valid @RequestBody Film film) {
-        if (films.containsKey(film.getId())) {
-            films.put(film.getId(), film);
-            log.info("Update film id=" + film.getId());
-            return film;
-        } else {
-            throw new EntityNotFoundException("PutMapping, в базе нет фильма с id=" + film.getId());
-        }
+        log.info("updateFilm {}" + film.getId());
+        return filmService.updateFilm(film);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Long id,
+                        @PathVariable Long userId) {
+        log.info("addLike {} user {} " + id + userId);
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable Long id,
+                           @PathVariable Long userId) {
+        log.info("deleteLike {} user {} " + id + userId);
+        filmService.deleteLike(id, userId);
     }
 }
