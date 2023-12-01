@@ -32,49 +32,51 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        getUserByIdCheck(user.getId());
+        getUserIfExist(user.getId());
         return userStorage.updateUser(user);
     }
 
     public User getUser(Long id) {
-        return getUserByIdCheck(id);
+        return getUserIfExist(id);
     }
 
     public User addFriend(Long userId, Long friendId) {
-        User user = getUserByIdCheck(userId);
-        User friendUser = getUserByIdCheck(friendId);
+        User user = getUserIfExist(userId);
+        User friend = getUserIfExist(friendId);
         user.addFriend(friendId);
-        friendUser.addFriend(userId);
-        return userStorage.getUserById(userId);
+        friend.addFriend(userId);
+        userStorage.updateUser(friend);
+        return userStorage.updateUser(user);
     }
 
     public User deleteFriend(Long userId, Long friendId) {
-        User user = getUserByIdCheck(userId);
-        User friend = getUserByIdCheck(friendId);
+        User user = getUserIfExist(userId);
+        User friend = getUserIfExist(friendId);
         user.deleteFriend(userId);
         friend.deleteFriend(friendId);
-        return userStorage.getUserById(userId);
+        userStorage.updateUser(friend);
+        return userStorage.updateUser(user);
     }
 
     public List<User> getFriends(Long id) {
-        User user = getUserByIdCheck(id);
+        User user = getUserIfExist(id);
         return getUsers().stream()
                 .filter(u -> user.getFriends().contains(u.getId()))
                 .collect(Collectors.toList());
     }
 
     public List<User> getMutualFriends(Long userId, Long friendId) {
-        User user = getUserByIdCheck(userId);
-        User userFriend = getUserByIdCheck(friendId);
+        User user = getUserIfExist(userId);
+        User userFriend = getUserIfExist(friendId);
         List<Long> mutualId = user.getFriends().stream()
                 .filter(id -> userFriend.getFriends().contains(id))
                 .collect(Collectors.toList());
         return mutualId.stream()
-                .map(this::getUserByIdCheck)
+                .map(this::getUserIfExist)
                 .collect(Collectors.toList());
     }
 
-    public User getUserByIdCheck(Long id) {
+    public User getUserIfExist(Long id) {
         User user = userStorage.getUserById(id);
         if (user == null) {
             throw new EntityNotFoundException("Не найден user id {} " + id);

@@ -31,11 +31,11 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        getFilmByIdCheck(film.getId());
+        getFilmIfExist(film.getId());
         return filmStorage.updateFilm(film);
     }
 
-    public Film getFilmByIdCheck(Long id) {
+    public Film getFilmIfExist(Long id) {
         Film filmById = filmStorage.getFilmById(id);
         if (filmById == null) {
             throw new EntityNotFoundException("Не найден film c id {} " + id);
@@ -44,17 +44,17 @@ public class FilmService {
     }
 
     public Film addLike(Long id, Long userId) {
-        Film film = getFilmByIdCheck(id);
-        userService.getUserByIdCheck(userId);
+        Film film = getFilmIfExist(id);
+        userService.getUserIfExist(userId);
         film.addLike(userId);
-        return filmStorage.getFilmById(id);
+        return filmStorage.updateFilm(film);
     }
 
     public Film deleteLike(Long id, Long userId) {
-        Film filmByIdCheck = getFilmByIdCheck(id);
-        userService.getUserByIdCheck(userId);
-        filmByIdCheck.deleteLike(userId);
-        return filmStorage.getFilmById(id);
+        Film film = getFilmIfExist(id);
+        userService.getUserIfExist(userId);
+        film.deleteLike(userId);
+        return filmStorage.updateFilm(film);
     }
 
     public List<Film> getPopularFilms(Integer count) {
