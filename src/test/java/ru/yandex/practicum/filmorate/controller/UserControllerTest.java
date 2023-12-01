@@ -1,11 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.FilmorateApplication;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -13,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 class UserControllerTest {
     @Autowired
@@ -45,7 +43,6 @@ class UserControllerTest {
         User user = userController.createUser(new User("mail@mail.ru", "Login", " ",
                 LocalDate.of(1989, 10, 5)));
         assertEquals(user.getLogin(), user.getName());
-
         User user1 = userController.createUser(new User("mail@mail.ru", "Login", null,
                 LocalDate.of(1989, 10, 5)));
         assertEquals(user1.getLogin(), user1.getName());
