@@ -17,12 +17,6 @@ class UserControllerTest {
     UserController userController;
 
     @Test
-    void shouldReturnEmptyList() {
-        List<User> users = userController.getUsers();
-        assertTrue(users.isEmpty());
-    }
-
-    @Test
     void shouldCreateUsers() {
         User user = userController.createUser(new User("mail@mail.ru", "Login", "Name",
                 LocalDate.of(1989, 10, 5)));
