@@ -2,7 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -27,14 +31,14 @@ public class FilmController {
         return filmService.getFilms();
     }
 
-    @GetMapping("/films/popular")
-    public List<Film> getPopularFilms(@RequestParam Integer count) {
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
         return filmService.getPopularFilms(count);
     }
 
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable Long id) {
-        return filmService.getFilmById(id);
+        return filmService.getFilmByIdCheck(id);
     }
 
     @PostMapping()
@@ -50,16 +54,28 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id,
+    public Film addLike(@PathVariable Long id,
                         @PathVariable Long userId) {
         log.info("addLike {} user {} " + id + userId);
-        filmService.addLike(id, userId);
+        return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable Long id,
+    public Film deleteLike(@PathVariable Long id,
                            @PathVariable Long userId) {
         log.info("deleteLike {} user {} " + id + userId);
-        filmService.deleteLike(id, userId);
+        return filmService.deleteLike(id, userId);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFoundException(final RuntimeException e) {
+        return new ErrorResponse("error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(final MethodArgumentNotValidException e) {
+        return new ErrorResponse("error", e.getMessage());
     }
 }

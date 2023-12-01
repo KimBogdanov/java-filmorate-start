@@ -2,7 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -37,17 +41,18 @@ public class UserController {
         log.info("getFriends {}" + id);
         return userService.getFriends(id);
     }
+
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getMutualFriends(@PathVariable Long id,
-                                 @PathVariable Long otherId) {
-        log.info("getMutualFriends {}" + id + otherId);
+                                       @PathVariable Long otherId) {
+        log.info("getMutualFriends id {} " + id + "id {} " + otherId);
         return userService.getMutualFriends(id, otherId);
     }
 
     @PostMapping()
     public User createUser(@Valid @RequestBody User user) {
         User newUser = userService.createUser(user);
-        log.info("createUsers {}" + newUser.getId());
+        log.info("createUser {}" + newUser.getId());
         return newUser;
     }
 
@@ -58,16 +63,29 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Long id,
+    public User addFriend(@PathVariable Long id,
                           @PathVariable Long friendId) {
-        log.info("addFriend {}" + id + friendId);
-        userService.addFriend(id, friendId);
+        log.info("addFriend {} " + id + "id {} " + friendId);
+        User user = userService.addFriend(id, friendId);
+        return user;
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable Long id,
+    public User deleteFriend(@PathVariable Long id,
                              @PathVariable Long friendId) {
-        log.info("deleteFriend {}" + id + friendId);
-        userService.deleteFriend(id, friendId);
+        log.info("deleteFriend {} " + id + "id {} " + friendId);
+        return userService.deleteFriend(id, friendId);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFoundException(final RuntimeException e) {
+        return new ErrorResponse("error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(final MethodArgumentNotValidException e) {
+        return new ErrorResponse("error", e.getMessage());
     }
 }

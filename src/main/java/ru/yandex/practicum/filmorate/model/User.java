@@ -22,12 +22,20 @@ public class User {
     String name;
     @Past
     LocalDate birthday;
-    Set<User> friends = new HashSet<>();
+    Set<Long> friends = new HashSet<>();
 
     public User(String email, String login, String name, LocalDate birthday) { //for tests
         this.email = email;
         this.login = login;
         this.name = name;
         this.birthday = birthday;
+    }
+
+    public void addFriend(Long id) {
+        friends.add(id);
+    }
+
+    public void deleteFriend(Long id) {
+        friends.remove(id);
     }
 }

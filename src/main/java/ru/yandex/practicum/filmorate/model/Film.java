@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.customValidator.MinimumDate;
 
@@ -11,7 +10,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@AllArgsConstructor
 @Data
 public class Film {
     Long id;
@@ -23,5 +21,13 @@ public class Film {
     LocalDate releaseDate;
     @Positive
     long duration;
-    Set<User> likes = new HashSet<>();
+    Set<Long> likes = new HashSet<>();
+
+    public void addLike(Long id) {
+        likes.add(id);
+    }
+
+    public void deleteLike(Long id) {
+        likes.remove(id);
+    }
 }

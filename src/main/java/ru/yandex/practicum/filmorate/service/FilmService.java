@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,14 +31,11 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        Film filmById = filmStorage.getFilmById(film.getId());
-        if (filmById == null) {
-            throw new EntityNotFoundException("PutMapping, в базе нет фильма с id=" + film.getId());
-        }
+        getFilmByIdCheck(film.getId());
         return filmStorage.updateFilm(film);
     }
 
-    public Film getFilmById(Long id) {
+    public Film getFilmByIdCheck(Long id) {
         Film filmById = filmStorage.getFilmById(id);
         if (filmById == null) {
             throw new EntityNotFoundException("Не найден film c id {} " + id);
@@ -47,12 +43,18 @@ public class FilmService {
         return filmById;
     }
 
-    public void addLike(Long id, Long userId) {
-        getFilmById(id).getLikes().add(userService.getUserById(userId));
+    public Film addLike(Long id, Long userId) {
+        Film film = getFilmByIdCheck(id);
+        userService.getUserByIdCheck(userId);
+        film.addLike(userId);
+        return filmStorage.getFilmById(id);
     }
 
-    public void deleteLike(Long id, Long userId) {
-        getFilmById(id).getLikes().remove(userService.getUserById(userId));
+    public Film deleteLike(Long id, Long userId) {
+        Film filmByIdCheck = getFilmByIdCheck(id);
+        userService.getUserByIdCheck(userId);
+        filmByIdCheck.deleteLike(userId);
+        return filmStorage.getFilmById(id);
     }
 
     public List<Film> getPopularFilms(Integer count) {

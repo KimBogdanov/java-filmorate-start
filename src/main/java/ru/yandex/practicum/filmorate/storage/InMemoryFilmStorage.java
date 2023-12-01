@@ -10,7 +10,6 @@ import java.util.Map;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-
     Map<Long, Film> films = new HashMap<>();
 
     @Override
