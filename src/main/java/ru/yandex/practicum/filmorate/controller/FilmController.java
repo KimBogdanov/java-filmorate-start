@@ -39,7 +39,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable Long id) {
         log.info("getFilm " + id);
-        return filmService.getFilmIfExist(id);
+        return filmService.getFilm(id);
     }
 
     @PostMapping()

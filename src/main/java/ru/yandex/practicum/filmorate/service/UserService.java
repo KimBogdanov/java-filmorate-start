@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -30,17 +29,17 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        getUserIfExist(user.getId());
+        getUserById(user.getId());
         return userStorage.updateUser(user);
     }
 
     public User getUser(Long id) {
-        return getUserIfExist(id);
+        return getUserById(id);
     }
 
     public User addFriend(Long userId, Long friendId) {
-        User user = getUserIfExist(userId);
-        User friend = getUserIfExist(friendId);
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         user.addFriend(friendId);
         friend.addFriend(userId);
         userStorage.updateUser(friend);
@@ -48,8 +47,8 @@ public class UserService {
     }
 
     public User deleteFriend(Long userId, Long friendId) {
-        User user = getUserIfExist(userId);
-        User friend = getUserIfExist(friendId);
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         user.deleteFriend(userId);
         friend.deleteFriend(friendId);
         userStorage.updateUser(friend);
@@ -57,28 +56,24 @@ public class UserService {
     }
 
     public List<User> getFriends(Long id) {
-        User user = getUserIfExist(id);
+        User user = getUserById(id);
         return getUsers().stream()
                 .filter(u -> user.getFriends().contains(u.getId()))
                 .collect(Collectors.toList());
     }
 
     public List<User> getMutualFriends(Long userId, Long friendId) {
-        User user = getUserIfExist(userId);
-        User userFriend = getUserIfExist(friendId);
+        User user = getUserById(userId);
+        User userFriend = getUserById(friendId);
         List<Long> mutualId = user.getFriends().stream()
                 .filter(id -> userFriend.getFriends().contains(id))
                 .collect(Collectors.toList());
         return mutualId.stream()
-                .map(this::getUserIfExist)
+                .map(this::getUserById)
                 .collect(Collectors.toList());
     }
 
-    public User getUserIfExist(Long id) {
-        User user = userStorage.getUserById(id);
-        if (user == null) {
-            throw new EntityNotFoundException("Не найден user id {} " + id);
-        }
-        return user;
+    public User getUserById(Long id) {
+        return userStorage.getUserById(id);
     }
 }

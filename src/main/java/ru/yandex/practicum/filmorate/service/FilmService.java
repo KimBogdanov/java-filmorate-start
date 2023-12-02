@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -29,28 +28,24 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        getFilmIfExist(film.getId());
+        getFilm(film.getId());
         return filmStorage.updateFilm(film);
     }
 
-    public Film getFilmIfExist(Long id) {
-        Film filmById = filmStorage.getFilmById(id);
-        if (filmById == null) {
-            throw new EntityNotFoundException("Не найден film c id {} " + id);
-        }
-        return filmById;
+    public Film getFilm(Long id) {
+        return filmStorage.getFilmById(id);
     }
 
     public Film addLike(Long id, Long userId) {
-        Film film = getFilmIfExist(id);
-        userService.getUserIfExist(userId);
+        Film film = getFilm(id);
+        userService.getUserById(userId);
         film.addLike(userId);
         return filmStorage.updateFilm(film);
     }
 
     public Film deleteLike(Long id, Long userId) {
-        Film film = getFilmIfExist(id);
-        userService.getUserIfExist(userId);
+        Film film = getFilm(id);
+        userService.getUserById(userId);
         film.deleteLike(userId);
         return filmStorage.updateFilm(film);
     }
