@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -50,5 +51,15 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new EntityNotFoundException("Не найден film c id " + id);
         }
         return films.containsKey(id);
+    }
+
+    @Override
+    public List<Film> getFilms(Integer count) {
+        return films.values().stream()
+                .sorted((film1, film2) -> {
+                    return film2.getLikes().size() - film1.getLikes().size();
+                })
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }

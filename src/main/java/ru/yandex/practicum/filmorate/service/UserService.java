@@ -29,7 +29,6 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        getUserById(user.getId());
         return userStorage.updateUser(user);
     }
 
@@ -49,17 +48,14 @@ public class UserService {
     public User deleteFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
-        user.deleteFriend(userId);
-        friend.deleteFriend(friendId);
+        user.deleteFriend(friendId);
+        friend.deleteFriend(userId);
         userStorage.updateUser(friend);
         return userStorage.updateUser(user);
     }
 
     public List<User> getFriends(Long id) {
-        User user = getUserById(id);
-        return getUsers().stream()
-                .filter(u -> user.getFriends().contains(u.getId()))
-                .collect(Collectors.toList());
+        return userStorage.getFriends(id);
     }
 
     public List<User> getMutualFriends(Long userId, Long friendId) {
