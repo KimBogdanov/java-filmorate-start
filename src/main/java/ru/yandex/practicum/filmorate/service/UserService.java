@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    private Long counter = 1L;
     UserStorage userStorage;
 
     @Autowired
@@ -27,7 +26,6 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        user.setId(counter++);
         return userStorage.createUser(user);
     }
 

@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public class FilmService {
     FilmStorage filmStorage;
     UserService userService;
-    private Long counter = 1L;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserService userService) {
@@ -26,7 +25,6 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        film.setId(counter++);
         return filmStorage.createFilm(film);
     }
 
