@@ -12,6 +12,7 @@ public interface UserStorage {
     User getUserById(Long id);
 
     User updateUser(User user);
+
     boolean isExist(Long id);
 
     List<User> getFriends(Long id);
