@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -29,6 +30,9 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        if (!userStorage.isExist(user.getId())) {
+            throw new EntityNotFoundException("Не найден user id " + user.getId());
+        }
         return userStorage.updateUser(user);
     }
 
@@ -55,6 +59,9 @@ public class UserService {
     }
 
     public List<User> getFriends(Long id) {
+        if (!userStorage.isExist(id)) {
+            throw new EntityNotFoundException("Не найден user id " + id);
+        }
         return userStorage.getFriends(id);
     }
 
@@ -70,6 +77,9 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
+        if (!userStorage.isExist(id)) {
+            throw new EntityNotFoundException("Не найден user id " + id);
+        }
         return userStorage.getUserById(id);
     }
 }
