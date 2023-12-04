@@ -1,2 +1,3 @@
-# java-filmorate
-Template repository for Filmorate project.
+# Рейтинг фильмов
+### Приложение на основе spring-boot и хранением в базах данных Postgresql.
+Схема DB ![Схема db](db%20ver2.png)
