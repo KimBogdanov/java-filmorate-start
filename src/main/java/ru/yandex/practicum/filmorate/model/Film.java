@@ -9,18 +9,22 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 public class Film {
-    Long id;
+    private Long id;
     @NotBlank
-    String name;
+    private String name;
     @Size(max = 200, message = "Описание не может быть длинне 200 символов")
-    String description;
+    private String description;
     @MinimumDate(minDate = "1895-12-28")
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
     @Positive
-    long duration;
+    private long duration;
+    private Set<Genre> genres = new TreeSet<>((genre1, genre2) -> {
+        return genre2.getId() - genre1.getId();
+    });
     Set<Long> likes = new HashSet<>();
 
     public void addLike(Long id) {
