@@ -12,6 +12,9 @@ import java.util.Set;
 
 @Data
 public class User {
+    public User() {
+    }
+
     Long id;
     @NotBlank
     @Email
@@ -25,6 +28,14 @@ public class User {
     Set<Long> friends = new HashSet<>();
 
     public User(String email, String login, String name, LocalDate birthday) { //for tests
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
+
+    public User(Long id, String email, String login, String name, LocalDate birthday) {
+        this.id = id;
         this.email = email;
         this.login = login;
         this.name = name;
