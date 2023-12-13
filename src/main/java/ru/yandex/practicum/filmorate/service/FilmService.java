@@ -37,9 +37,9 @@ public class FilmService {
     }
 
     public Film getFilm(Long id) {
-        if (!filmStorage.isExist(id)) {
-            throw new EntityNotFoundException("Не найден film c id " + id);
-        }
+//        if (!filmStorage.isExist(id)) {
+//            throw new EntityNotFoundException("Не найден film c id " + id);
+//        }
         return filmStorage.getFilmById(id);
     }
 

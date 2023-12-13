@@ -7,9 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 @Data
 public class Film {
@@ -22,28 +20,19 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private long duration;
-    private int rating;
-    private Set<Genre> genres = new TreeSet<>((genre1, genre2) -> {
-        return genre2.getId() - genre1.getId();
-    });
+    private Rating rating;
+    private List<Genre> genres = new ArrayList<>();
     private int like = 0;
-    Set<Long> likes = new HashSet<>();
 
-    public Film(Long id, String name, String description, LocalDate releaseDate, long duration, int rating, int like) {
+    public Film() {
+    }
+
+    public Film(Long id, String name, String description, long duration, Rating rating, int like) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.releaseDate = releaseDate;
         this.duration = duration;
         this.rating = rating;
         this.like = like;
-    }
-
-    public void addLike(Long id) {
-        likes.add(id);
-    }
-
-    public void deleteLike(Long id) {
-        likes.remove(id);
     }
 }
