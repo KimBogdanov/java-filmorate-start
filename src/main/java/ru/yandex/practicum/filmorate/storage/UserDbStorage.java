@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -22,6 +21,21 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public User getUserById(Long id) {
+        return jdbcTemplate.queryForObject("SELECT * FROM person WHERE person_id = ?", getUserMapper(), id);
+    }
+
+    private static RowMapper<User> getUserMapper() {
+        return (rs, rowNum) -> new User(
+                rs.getLong("person_id"),
+                rs.getString("email"),
+                rs.getString("login"),
+                rs.getString("name"),
+                rs.getDate("birthday").toLocalDate()
+        );
+    }
+
+    @Override
     public User createUser(User user) {
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("person")
@@ -31,9 +45,13 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-    @Override
-    public User getUserById(Long id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM person WHERE person_id = ?", getUserMapper(), id);
+    private Map<String, Object> userToMap(User user) {
+        return Map.of(
+                "email", user.getEmail(),
+                "login", user.getLogin(),
+                "name", user.getName(),
+                "birthday", user.getBirthday()
+        );
     }
 
     @Override
@@ -58,24 +76,5 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getFriends(Long id) {
         return null;
-    }
-
-    private Map<String, Object> userToMap(User user) {
-        return Map.of(
-                "email", user.getEmail(),
-                "login", user.getLogin(),
-                "name", user.getName(),
-                "birthday", user.getBirthday()
-        );
-    }
-
-    private static RowMapper<User> getUserMapper() {
-        return (rs, rowNum) -> new User(
-                rs.getLong("person_id"),
-                rs.getString("email"),
-                rs.getString("login"),
-                rs.getString("name"),
-                rs.getDate("birthday").toLocalDate()
-        );
     }
 }

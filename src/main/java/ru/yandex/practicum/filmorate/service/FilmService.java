@@ -13,7 +13,6 @@ import java.util.List;
 public class FilmService {
 
     FilmStorage filmStorage;
-    @Qualifier("userDbStorage")
     UserService userService;
 
     @Autowired
@@ -23,7 +22,7 @@ public class FilmService {
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getPopularFilms();
+        return filmStorage.getFilms();
     }
 
     public Film createFilm(Film film) {
