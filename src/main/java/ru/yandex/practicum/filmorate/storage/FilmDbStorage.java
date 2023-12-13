@@ -70,7 +70,7 @@ public class FilmDbStorage implements FilmStorage {
         return Map.of(
                 "title", film.getName(),
                 "description", film.getDescription(),
-                "release_data", Date.valueOf(film.getReleaseDate()),
+                "release_date", Date.valueOf(film.getReleaseDate()),
                 "duration", (int) film.getDuration(),
                 "rating_id", film.getMpa().getId(),
                 "likes", film.getLikes()
@@ -95,7 +95,18 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        return null;
+        String sqlQuery = "UPDATE film SET " +
+                "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ?, LIKES = ?" +
+                "WHERE FILM_ID = ?";
+        jdbcTemplate.update(sqlQuery,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getLikes(),
+                film.getId());
+        return film;
     }
 
     @Override
