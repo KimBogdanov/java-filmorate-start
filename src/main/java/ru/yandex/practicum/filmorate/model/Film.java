@@ -20,19 +20,20 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private long duration;
-    private Rating rating;
+    private Rating mpa;
     private List<Genre> genres = new ArrayList<>();
-    private int like = 0;
+    private int likes = 0;
 
     public Film() {
     }
 
-    public Film(Long id, String name, String description, long duration, Rating rating, int like) {
+    public Film(Long id, String name, String description, LocalDate releaseDate, long duration, Rating mpa, int likes) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.releaseDate = releaseDate;
         this.duration = duration;
-        this.rating = rating;
-        this.like = like;
+        this.mpa = mpa;
+        this.likes = likes;
     }
 }

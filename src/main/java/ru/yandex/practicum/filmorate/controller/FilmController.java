@@ -50,17 +50,17 @@ public class FilmController {
         return filmService.updateFilm(film);
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable Long id,
-                        @PathVariable Long userId) {
-        log.info(String.format("addLike film %d user  %d", id, userId));
-        return filmService.addLike(id, userId);
-    }
+//    @PutMapping("/{id}/like/{userId}")
+//    public Film addLike(@PathVariable Long id,
+//                        @PathVariable Long userId) {
+//        log.info(String.format("addLike film %d user  %d", id, userId));
+//        return filmService.addLike(id, userId);
+//    }
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLike(@PathVariable Long id,
-                           @PathVariable Long userId) {
-        log.info(String.format("deleteLike film %d user %d", id, userId));
-        return filmService.deleteLike(id, userId);
-    }
+//    @DeleteMapping("/{id}/like/{userId}")
+//    public Film deleteLike(@PathVariable Long id,
+//                           @PathVariable Long userId) {
+//        log.info(String.format("deleteLike film %d user %d", id, userId));
+//        return filmService.deleteLike(id, userId);
+//    }
 }

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -43,19 +42,19 @@ public class FilmService {
         return filmStorage.getFilmById(id);
     }
 
-    public Film addLike(Long id, Long userId) {
-        Film film = getFilm(id);
-        userService.getUserById(userId);
-        film.addLike(userId);
-        return filmStorage.updateFilm(film);
-    }
-
-    public Film deleteLike(Long id, Long userId) {
-        Film film = getFilm(id);
-        userService.getUserById(userId);
-        film.deleteLike(userId);
-        return filmStorage.updateFilm(film);
-    }
+//    public Film addLike(Long id, Long userId) {
+//        Film film = getFilm(id);
+//        userService.getUserById(userId);
+//        film.addLike(userId);
+//        return filmStorage.updateFilm(film);
+//    }
+//
+//    public Film deleteLike(Long id, Long userId) {
+//        Film film = getFilm(id);
+//        userService.getUserById(userId);
+//        film.deleteLike(userId);
+//        return filmStorage.updateFilm(film);
+//    }
 
     public List<Film> getPopularFilms(Integer count) {
         return filmStorage.getPopularFilms(count);
