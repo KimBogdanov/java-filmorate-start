@@ -20,12 +20,16 @@ public class GenreController {
     }
 
     @GetMapping()
+
     public List<Genre> getGenres(){
+        log.info("getGenres");
         return genreService.getGenres();
     }
 
     @GetMapping("/{id}")
+
     public Genre getGenre(@PathVariable Integer id){
+        log.info("getGenre id {} ", id);
         return genreService.getGenre(id);
     }
 }
