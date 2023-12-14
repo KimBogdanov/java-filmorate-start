@@ -24,11 +24,13 @@ public class RatingController {
 
     @GetMapping()
     public List<Rating> getRatings() {
+        log.info("getRatings");
         return ratingService.getRatings();
     }
 
     @GetMapping("/{id}")
     public Rating getRating(@PathVariable Integer id) {
+        log.info("getRating id {} ", id);
         return ratingService.getById(id);
     }
 }
