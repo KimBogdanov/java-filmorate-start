@@ -10,7 +10,6 @@ import java.util.List;
 
 @Service
 public class FilmService {
-
     FilmStorage filmStorage;
     UserService userService;
 
@@ -29,34 +28,44 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        if (!filmStorage.isExist(film.getId())) {
-            throw new EntityNotFoundException("Не найден film c id " + film.getId());
+        if(isExist(film.getId())){
+            throw new EntityNotFoundException("Фильма с id " + film.getId() + " нет в базе");
         }
         return filmStorage.updateFilm(film);
     }
 
     public Film getFilm(Long id) {
-//        if (!filmStorage.isExist(id)) {
-//            throw new EntityNotFoundException("Не найден film c id " + id);
-//        }
+        if(isExist(id)){
+            throw new EntityNotFoundException("Фильма с id " + id + " нет в базе");
+        }
+
         return filmStorage.getFilmById(id);
     }
 
-//    public Film addLike(Long id, Long userId) {
-//        Film film = getFilm(id);
-//        userService.getUserById(userId);
-//        film.addLike(userId);
-//        return filmStorage.updateFilm(film);
-//    }
-//
-//    public Film deleteLike(Long id, Long userId) {
-//        Film film = getFilm(id);
-//        userService.getUserById(userId);
-//        film.deleteLike(userId);
-//        return filmStorage.updateFilm(film);
-//    }
+    public void addLike(Long id, Long userId) {
+        if(isExist(id)){
+            throw new EntityNotFoundException("Фильма с id " + id + " нет в базе");
+        }
+        if(userService.isExist(userId)){
+            throw new EntityNotFoundException("User с id " + userId + " нет в базе");
+        }
+        filmStorage.addLike(id, userId);
+    }
+
+    public void deleteLike(Long id, Long userId) {
+        if(isExist(id)){
+            throw new EntityNotFoundException("Фильма с id " + id + " нет в базе");
+        }
+        if(userService.isExist(userId)){
+            throw new EntityNotFoundException("User с id " + userId + " нет в базе");
+        }
+        filmStorage.deleteLike(id, userId);
+    }
 
     public List<Film> getPopularFilms(Integer count) {
         return filmStorage.getPopularFilms(count);
+    }
+    public boolean isExist(Long id){
+        return filmStorage.isExist(id);
     }
 }

@@ -70,11 +70,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean isExist(Long id) {
-        return true;
-    }
-
-    @Override
-    public List<User> getFriends(Long id) {
-        return null;
+        String sql = "select * from PERSON where PERSON_ID = ?";
+        return !jdbcTemplate.queryForRowSet(sql, id).next();
     }
 }

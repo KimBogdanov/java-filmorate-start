@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FriendsStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -14,10 +15,11 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     UserService userService;
+    FriendsStorage friendsStorage;
 
-    @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FriendsStorage friendsStorage) {
         this.userService = userService;
+        this.friendsStorage = friendsStorage;
     }
 
     @GetMapping()
@@ -59,17 +61,16 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable Long id,
+    public void addFriend(@PathVariable Long id,
                           @PathVariable Long friendId) {
         log.info("addFriend " + id + "id " + friendId);
-        User user = userService.addFriend(id, friendId);
-        return user;
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable Long id,
+    public void deleteFriend(@PathVariable Long id,
                              @PathVariable Long friendId) {
         log.info("deleteFriend " + id + "id " + friendId);
-        return userService.deleteFriend(id, friendId);
+        userService.deleteFriend(id, friendId);
     }
 }

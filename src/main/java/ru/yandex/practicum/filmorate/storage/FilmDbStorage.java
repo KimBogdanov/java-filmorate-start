@@ -33,23 +33,7 @@ public class FilmDbStorage implements FilmStorage {
         List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper());
         Film film = null;
         List<Genre> genres = new ArrayList<>();
-        List<Film> films = new ArrayList<>();
-        for (DualElement<Film, Genre> filmGenreDualElement : rowList) {
-            if (film == null) {
-                film = filmGenreDualElement.getFirst();
-            }
-            if (film == null) {
-                throw new EntityNotFoundException("В базе нет фильмов");
-            }
-            film.setGenres(genres);
-            films.add(film);
-            if (!film.equals(filmGenreDualElement.getFirst())) {
-                film = new Film();
-                genres = new ArrayList<>();
-            }
-            genres.add(filmGenreDualElement.getSecond());
-        }
-        return films;
+        return getFilms(rowList, film, genres);
     }
 
     @Override
@@ -95,6 +79,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
+        isExist(film.getId());
         String sqlQuery = "UPDATE film SET " +
                 "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ?, LIKES = ?" +
                 "WHERE FILM_ID = ?";
@@ -106,6 +91,12 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId(),
                 film.getLikes(),
                 film.getId());
+        String sqlDelete = "DELETE FROM film_genre WHERE FILM_ID = ?";
+        jdbcTemplate.update(sqlDelete, film.getId());
+        if (!film.getGenres().isEmpty()) {
+            List<Genre> genres = new ArrayList<>(film.getGenres());
+            saveFilmGenre(film.getId(), genres);
+        }
         return film;
     }
 
@@ -133,13 +124,59 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public boolean isExist(Long id) {
-        return true;
+    public List<Film> getPopularFilms(Integer count) {
+        String sql = "SELECT f.*, g.* , r.RATING " +
+                "FROM film f " +
+                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genre g ON fg.genre_id = g.genre_id " +
+                "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID " +
+                "ORDER BY f.likes DESC LIMIT ?";
+        List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper(), count);
+        Film film = null;
+        List<Genre> genres = new ArrayList<>();
+        return getFilms(rowList, film, genres);
     }
 
     @Override
-    public List<Film> getPopularFilms(Integer count) {
-        return null;
+    public boolean isExist(Long id) {
+        String sql = "select * from FILM where FILM_ID = ?";
+        return !jdbcTemplate.queryForRowSet(sql, id).next();
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        String sql = "INSERT INTO FILM_LIKE (FILM_ID, PERSON_ID) VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, userId);
+        String sqlRate = "UPDATE film SET LIKES = (LIKES + 1) where film_id = ?";
+        jdbcTemplate.update(sqlRate, filmId);
+    }
+
+    @Override
+    public void deleteLike(Long filmId, Long userId) {
+        String sql = "DELETE FROM film_like WHERE (FILM_ID = ? and PERSON_ID = ?)";
+        jdbcTemplate.update(sql, filmId, userId);
+        String sqlRate = "update film set LIKES = (LIKES -1) where film_id = ?";
+        jdbcTemplate.update(sqlRate, filmId);
+    }
+
+    private List<Film> getFilms(List<DualElement<Film, Genre>> rowList, Film film, List<Genre> genres) {
+        List<Film> films = new ArrayList<>();
+        for (DualElement<Film, Genre> filmGenreDualElement : rowList) {
+            if (film == null) {
+                film = filmGenreDualElement.getFirst();
+            }
+            if (film == null) {
+                throw new EntityNotFoundException("В базе нет фильмов");
+            }
+            film.setGenres(genres);
+            films.add(film);
+            if (!film.equals(filmGenreDualElement.getFirst())) {
+                film = new Film();
+                genres = new ArrayList<>();
+            }
+            genres.add(filmGenreDualElement.getSecond());
+        }
+        return films;
     }
 
     private static RowMapper<DualElement<Film, Genre>> getFilmTempMapper() {
@@ -150,7 +187,7 @@ public class FilmDbStorage implements FilmStorage {
                     rs.getString("description"),
                     rs.getDate("release_date").toLocalDate(),
                     rs.getLong("duration"),
-                    new Rating(rs.getInt ("rating_id"),
+                    new Rating(rs.getInt("rating_id"),
                             rs.getString("rating")),
                     rs.getInt("likes"));
             Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("genre"));

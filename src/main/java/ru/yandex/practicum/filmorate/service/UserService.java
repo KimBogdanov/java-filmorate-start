@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
@@ -12,10 +13,12 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     UserStorage userStorage;
+    FriendsStorage friendsStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(UserStorage userStorage, FriendsStorage friendsStorage) {
         this.userStorage = userStorage;
+        this.friendsStorage = friendsStorage;
     }
 
     public List<User> getUsers() {
@@ -30,9 +33,6 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        if (!userStorage.isExist(user.getId())) {
-            throw new EntityNotFoundException("Не найден user id " + user.getId());
-        }
         return userStorage.updateUser(user);
     }
 
@@ -40,46 +40,27 @@ public class UserService {
         return getUserById(id);
     }
 
-    public User addFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
-        userStorage.updateUser(friend);
-        return userStorage.updateUser(user);
+    public void addFriend(Long userId, Long friendId) {
+        friendsStorage.addFriend(userId, friendId);
     }
 
-    public User deleteFriend(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.deleteFriend(friendId);
-        friend.deleteFriend(userId);
-        userStorage.updateUser(friend);
-        return userStorage.updateUser(user);
+    public void deleteFriend(Long userId, Long friendId) {
+        friendsStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriends(Long id) {
-        if (!userStorage.isExist(id)) {
-            throw new EntityNotFoundException("Не найден user id " + id);
-        }
-        return userStorage.getFriends(id);
+        return friendsStorage.getFriends(id);
     }
 
     public List<User> getMutualFriends(Long userId, Long friendId) {
-        User user = getUserById(userId);
-        User userFriend = getUserById(friendId);
-        List<Long> mutualId = user.getFriends().stream()
-                .filter(id -> userFriend.getFriends().contains(id))
-                .collect(Collectors.toList());
-        return mutualId.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return friendsStorage.getMutualFriends(userId, friendId);
     }
 
     public User getUserById(Long id) {
-        if (!userStorage.isExist(id)) {
-            throw new EntityNotFoundException("Не найден user id " + id);
-        }
         return userStorage.getUserById(id);
+    }
+
+    public boolean isExist(Long userId) {
+        return userStorage.isExist(userId);
     }
 }
