@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 
 @Data
-public class DualElement<T,V> {
+public class DualElement<T, V> {
     T first;
     V second;
 

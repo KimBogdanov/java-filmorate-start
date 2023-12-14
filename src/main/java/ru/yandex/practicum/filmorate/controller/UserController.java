@@ -17,6 +17,7 @@ public class UserController {
     UserService userService;
     FriendsStorage friendsStorage;
 
+    @Autowired
     public UserController(UserService userService, FriendsStorage friendsStorage) {
         this.userService = userService;
         this.friendsStorage = friendsStorage;

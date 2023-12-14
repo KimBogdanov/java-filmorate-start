@@ -26,8 +26,9 @@ public class ExceptionHandlerApi {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getClass().getSimpleName(), e.getMessage()));
     }
+
     @ExceptionHandler
-    public  ResponseEntity<ErrorResponse> handleEmptyResultDataAccessException(final EmptyResultDataAccessException e){
+    public ResponseEntity<ErrorResponse> handleEmptyResultDataAccessException(final EmptyResultDataAccessException e) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getClass().getSimpleName(), e.getMessage()));

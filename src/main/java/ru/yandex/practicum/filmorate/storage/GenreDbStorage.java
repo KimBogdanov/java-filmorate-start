@@ -34,6 +34,7 @@ public class GenreDbStorage implements GenreStorage {
                 rs.getInt("genre_id"),
                 rs.getString("genre"));
     }
+
     @Override
     public boolean isExist(Integer id) {
         String sql = "SELECT * FROM GENRE WHERE GENRE_ID = ?";

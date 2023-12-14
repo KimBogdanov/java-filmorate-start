@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface GenreStorage {
     List<Genre> getAll();
+
     Genre getById(Integer id);
 
     boolean isExist(Integer id);
