@@ -31,7 +31,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN genre g ON fg.genre_id = g.genre_id " +
                 "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID";
         List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper());
-        Film film = null;
+        Film film = new Film();
         List<Genre> genres = new ArrayList<>();
         return getFilms(rowList, film, genres);
     }
@@ -110,14 +110,14 @@ public class FilmDbStorage implements FilmStorage {
         List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper(), id);
         Film film = null;
         List<Genre> genres = new ArrayList<>();
-        for (DualElement<Film, Genre> filmGenreDualElement : rowList) {
+        for (DualElement<Film, Genre> filmGenre : rowList) {
             if (film == null) {
-                film = filmGenreDualElement.getFirst();
+                film = filmGenre.getFirst();
             }
-            genres.add(filmGenreDualElement.getSecond());
-        }
-        if (film == null) {
-            throw new EntityNotFoundException("Фильма нет в базе id=" + id);
+            if (filmGenre.getSecond().getName() == null) {
+                return film;
+            }
+            genres.add(filmGenre.getSecond());
         }
         film.setGenres(genres);
         return film;
@@ -132,7 +132,7 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID " +
                 "ORDER BY f.likes DESC LIMIT ?";
         List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper(), count);
-        Film film = null;
+        Film film = new Film();
         List<Genre> genres = new ArrayList<>();
         return getFilms(rowList, film, genres);
     }
@@ -161,20 +161,21 @@ public class FilmDbStorage implements FilmStorage {
 
     private List<Film> getFilms(List<DualElement<Film, Genre>> rowList, Film film, List<Genre> genres) {
         List<Film> films = new ArrayList<>();
-        for (DualElement<Film, Genre> filmGenreDualElement : rowList) {
-            if (film == null) {
-                film = filmGenreDualElement.getFirst();
-            }
-            if (film == null) {
+        for (DualElement<Film, Genre> filmGenre : rowList) {
+            if (filmGenre.getFirst() == null) {
                 throw new EntityNotFoundException("В базе нет фильмов");
             }
-            film.setGenres(genres);
-            films.add(film);
-            if (!film.equals(filmGenreDualElement.getFirst())) {
-                film = new Film();
-                genres = new ArrayList<>();
+            if (!film.equals(filmGenre.getFirst())) {
+                film = filmGenre.getFirst();
+                films.add(film);
             }
-            genres.add(filmGenreDualElement.getSecond());
+            if (filmGenre.getSecond().getName() != null && film.getGenres().isEmpty()) {
+                genres = new ArrayList<>();
+                film.setGenres(genres);
+            }
+            if (filmGenre.getSecond() != null) {
+                genres.add(filmGenre.getSecond());
+            }
         }
         return films;
     }
