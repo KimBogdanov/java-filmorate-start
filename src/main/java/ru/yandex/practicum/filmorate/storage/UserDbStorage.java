@@ -70,7 +70,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean isExist(Long id) {
-        String sql = "select * from PERSON where PERSON_ID = ?";
+        String sql = "SELECT * FROM PERSON WHERE PERSON_ID = ?";
         return !jdbcTemplate.queryForRowSet(sql, id).next();
     }
 }

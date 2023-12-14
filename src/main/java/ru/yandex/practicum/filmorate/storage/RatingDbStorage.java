@@ -30,6 +30,12 @@ public class RatingDbStorage implements RatingStorage {
         return jdbcTemplate.queryForObject(sql, getRatingMapper(), id);
     }
 
+    @Override
+    public boolean isExist(Integer id) {
+        String sql = "SELECT * FROM RATING WHERE RATING_ID = ?";
+        return !jdbcTemplate.queryForRowSet(sql, id).next();
+    }
+
     private static RowMapper<Rating> getRatingMapper() {
         return ((rs, rowNum) -> new Rating(rs.getInt("rating_id"),
                 rs.getString("rating")));
