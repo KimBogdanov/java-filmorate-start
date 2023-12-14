@@ -33,30 +33,60 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        if(isExist(user.getId())){
+            throw new EntityNotFoundException("User с id " + user.getId() + " нет в базе");
+        }
         return userStorage.updateUser(user);
     }
 
     public User getUser(Long id) {
+        if(isExist(id)){
+            throw new EntityNotFoundException("User с id " + id + " нет в базе");
+        }
         return getUserById(id);
     }
 
     public void addFriend(Long userId, Long friendId) {
+        if(isExist(userId)){
+            throw new EntityNotFoundException("User с id " + userId + " нет в базе");
+        }
+        if(isExist(friendId)){
+            throw new EntityNotFoundException("User с id " + friendId + " нет в базе");
+        }
         friendsStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
+        if(isExist(userId)){
+            throw new EntityNotFoundException("User с id " + userId + " нет в базе");
+        }
+        if(isExist(friendId)){
+            throw new EntityNotFoundException("User с id " + friendId + " нет в базе");
+        }
         friendsStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriends(Long id) {
+        if(isExist(id)){
+            throw new EntityNotFoundException("User с id " + id + " нет в базе");
+        }
         return friendsStorage.getFriends(id);
     }
 
     public List<User> getMutualFriends(Long userId, Long friendId) {
+        if(isExist(userId)){
+            throw new EntityNotFoundException("User с id " + userId + " нет в базе");
+        }
+        if(isExist(friendId)){
+            throw new EntityNotFoundException("User с id " + friendId + " нет в базе");
+        }
         return friendsStorage.getMutualFriends(userId, friendId);
     }
 
     public User getUserById(Long id) {
+        if(isExist(id)){
+            throw new EntityNotFoundException("User с id " + id + " нет в базе");
+        }
         return userStorage.getUserById(id);
     }
 
