@@ -72,9 +72,9 @@ class FriendsDbStorageTest {
                 "login", "name", LocalDate.of(2008, Month.DECEMBER, 05)));
         User user2 = userStorage.createUser(new User("pop@mail.com",
                 "login1", "name1", LocalDate.of(2010, Month.DECEMBER, 05)));
-        User user3 = userStorage.createUser(new User("pop@pop.com",
+        User user3 = userStorage.createUser(new User("pop@popo.com",
                 "login", "name", LocalDate.of(2008, Month.DECEMBER, 05)));
-        User user4 = userStorage.createUser(new User("pop@mail.com",
+        User user4 = userStorage.createUser(new User("popy@mail.com",
                 "login1", "name1", LocalDate.of(2010, Month.DECEMBER, 05)));
         friendsStorage.addFriend(user.getId(), user3.getId());
         friendsStorage.addFriend(user.getId(), user4.getId());
