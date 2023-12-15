@@ -43,11 +43,14 @@ class UserDbStorageTest {
     void updateUser() {
         User user = userStorage.createUser(new User("pop@pop.com",
                 "login", "name", LocalDate.of(2008, Month.DECEMBER, 05)));
-        User user2 = userStorage.createUser(new User("pop@mail.com",
-                "login1", "name1", LocalDate.of(2010, Month.DECEMBER, 05)));
+        User user2 = new User("pop@mail.com",
+                "login1", "name1", LocalDate.of(2010, Month.DECEMBER, 05));
         user2.setId(user.getId());
+
+
         userStorage.updateUser(user2);
         User userById = userStorage.getUserById(user.getId());
+
         assertEquals(user2, userById);
     }
 }
