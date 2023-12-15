@@ -24,7 +24,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        String sqlFilms = "Select f.*, r.* FROM film AS f left join RATING R on f.RATING_ID = R.RATING_ID";
+        String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID";
         List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper());
         return getFilms(films);
     }
@@ -72,6 +72,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
+        isExist(film.getId());
         String sqlQuery = "UPDATE film SET " +
                 "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ?, LIKES = ?" +
                 "WHERE FILM_ID = ?";
@@ -110,7 +111,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(Integer count) {
         String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID ORDER BY f.likes DESC LIMIT ?";
-        List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper(), count);
+        List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper(),count);
         return getFilms(films);
     }
 
