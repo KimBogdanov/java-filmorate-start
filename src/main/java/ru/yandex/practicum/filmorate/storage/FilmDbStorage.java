@@ -49,8 +49,7 @@ public class FilmDbStorage implements FilmStorage {
                 "description", film.getDescription(),
                 "release_date", Date.valueOf(film.getReleaseDate()),
                 "duration", (int) film.getDuration(),
-                "rating_id", film.getMpa().getId(),
-                "likes", film.getLikes()
+                "rating_id", film.getMpa().getId()
         );
     }
 
@@ -74,7 +73,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         isExist(film.getId());
         String sqlQuery = "UPDATE film SET " +
-                "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ?, LIKES = ?" +
+                "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ?" +
                 "WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQuery,
                 film.getName(),
@@ -82,7 +81,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getMpa().getId(),
-                film.getLikes(),
                 film.getId());
         String sqlDelete = "DELETE FROM film_genre WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlDelete, film.getId());
@@ -95,10 +93,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilmById(Long id) {
-        String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID where f.FILM_ID = ?";
-        String sqlGenre = "SELECT fg.FILM_ID, g.* FROM FILM_GENRE AS fg LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
+        String sqlFilms = "Select f.*, r.* " +
+                "FROM film as f " +
+                "LEFT JOIN RATING R on f.RATING_ID = R.RATING_ID " +
+                "WHERE f.FILM_ID = ?";
+        String sqlGenre = "SELECT fg.FILM_ID, g.* " +
+                "FROM FILM_GENRE AS fg " +
+                "LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID WHERE fg.FILM_ID = ?";
         Film film = jdbcTemplate.queryForObject(sqlFilms, getFilmRatingMapper(), id);
-        List<Map<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper());
+        List<Map<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper(), id);
         Long filmId = film.getId();
         for (Map<Long, Genre> longGenres : genres) {
             if (longGenres.containsKey(filmId)) {
@@ -110,7 +113,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
-        String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID ORDER BY f.likes DESC LIMIT ?";
+        String sqlFilms = "Select f.*, r.*  " +
+                "FROM film as f " +
+                "LEFT JOIN RATING R on f.RATING_ID = R.RATING_ID " +
+                "LEFT JOIN FILM_LIKE FL on f.FILM_ID = FL.FILM_ID " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(fl.PERSON_ID) " +
+                "DESC LIMIT ?";
         List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper(), count);
         return getFilms(films);
     }
@@ -139,16 +148,12 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(Long filmId, Long userId) {
         String sql = "INSERT INTO FILM_LIKE (FILM_ID, PERSON_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
-        String sqlRate = "UPDATE film SET LIKES = (LIKES + 1) where film_id = ?";
-        jdbcTemplate.update(sqlRate, filmId);
     }
 
     @Override
     public void deleteLike(Long filmId, Long userId) {
         String sql = "DELETE FROM film_like WHERE (FILM_ID = ? and PERSON_ID = ?)";
         jdbcTemplate.update(sql, filmId, userId);
-        String sqlRate = "update film set LIKES = (LIKES -1) where film_id = ?";
-        jdbcTemplate.update(sqlRate, filmId);
     }
 
     private static RowMapper<Film> getFilmRatingMapper() {
@@ -158,8 +163,7 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getDate("release_date").toLocalDate(),
                 rs.getLong("duration"),
                 new Rating(rs.getInt("rating_id"),
-                        rs.getString("rating")),
-                rs.getInt("likes"));
+                        rs.getString("rating")));
     }
 
     private static RowMapper<Map<Long, Genre>> getFilmGenreMapper() {

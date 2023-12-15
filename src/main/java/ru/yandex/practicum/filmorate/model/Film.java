@@ -22,28 +22,26 @@ public class Film {
     private long duration;
     private Rating mpa;
     private List<Genre> genres = new ArrayList<>();
-    private int likes = 0;
+//    private int likes = 0;
 
     public Film() {
     }
 
-    public Film(Long id, String name, String description, LocalDate releaseDate, long duration, Rating mpa, int likes) {
+    public Film(Long id, String name, String description, LocalDate releaseDate, long duration, Rating mpa) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
         this.mpa = mpa;
-        this.likes = likes;
     }
 
-    public Film(String name, String description, LocalDate releaseDate, long duration, Rating mpa, List<Genre> genres, int likes) {
+    public Film(String name, String description, LocalDate releaseDate, long duration, Rating mpa, List<Genre> genres) {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
         this.mpa = mpa;
         this.genres = genres;
-        this.likes = likes;
     }
 }
