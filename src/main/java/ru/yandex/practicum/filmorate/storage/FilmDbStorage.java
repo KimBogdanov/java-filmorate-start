@@ -111,7 +111,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(Integer count) {
         String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID ORDER BY f.likes DESC LIMIT ?";
-        List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper(),count);
+        List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper(), count);
         return getFilms(films);
     }
 
