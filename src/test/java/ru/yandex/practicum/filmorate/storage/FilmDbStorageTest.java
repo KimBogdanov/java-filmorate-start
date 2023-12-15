@@ -94,11 +94,10 @@ class FilmDbStorageTest {
     void addLike() {
         Film film = storage.createFilm(FILM);
         User user = userStorage.createUser(USER);
-        String sql = "SELECT * FROM FILM_LiKE";
-        List<Integer> integers = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-            return List.of(rs.getInt("person_id"),
-                    rs.getInt("film_id"));
-        });
+        storage.addLike(film.getId(), user.getId());
+        String sql = "SELECT * FROM FILM_LiKE WHERE FILM_ID = ?";
+        List<Integer> integers = jdbcTemplate.queryForObject(sql, (rs, rowNum) -> List.of(rs.getInt("person_id"),
+                rs.getInt("film_id")), film.getId());
         assertEquals(List.of((int) film.getId().longValue(), (int) user.getId().longValue()), integers);
     }
 
