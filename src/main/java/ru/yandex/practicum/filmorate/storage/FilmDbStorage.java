@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.Date;
@@ -25,15 +24,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-        String sql = "SELECT f.*, g.* , r.RATING " +
-                "FROM film f " +
-                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genre g ON fg.genre_id = g.genre_id " +
-                "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID";
-        List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper());
-        Film film = new Film();
-        List<Genre> genres = new ArrayList<>();
-        return getFilms(rowList, film, genres);
+        String sqlFilms = "Select f.*, r.* FROM film AS f left join RATING R on f.RATING_ID = R.RATING_ID";
+        List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper());
+        return getFilms(films);
     }
 
     @Override
@@ -45,7 +38,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setId(id);
         if (!film.getGenres().isEmpty()) {
             List<Genre> genres = new ArrayList<>(film.getGenres());
-            saveFilmGenre(id, genres);
+            saveGenresToFilm(id, genres);
         }
         return film;
     }
@@ -61,7 +54,7 @@ public class FilmDbStorage implements FilmStorage {
         );
     }
 
-    private void saveFilmGenre(Long id, List<Genre> genres) {
+    private void saveGenresToFilm(Long id, List<Genre> genres) {
         jdbcTemplate.batchUpdate("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
                 new BatchPreparedStatementSetter() {
                     @Override
@@ -79,7 +72,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        isExist(film.getId());
         String sqlQuery = "UPDATE film SET " +
                 "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ?, LIKES = ?" +
                 "WHERE FILM_ID = ?";
@@ -95,46 +87,45 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlDelete, film.getId());
         if (!film.getGenres().isEmpty()) {
             List<Genre> genres = new ArrayList<>(film.getGenres());
-            saveFilmGenre(film.getId(), genres);
+            saveGenresToFilm(film.getId(), genres);
         }
         return film;
     }
 
     @Override
     public Film getFilmById(Long id) {
-        String sql = "SELECT f.*, g.* , r.RATING " +
-                "FROM film f " +
-                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genre g ON fg.genre_id = g.genre_id " +
-                "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID  where f.FILM_ID = ?";
-        List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper(), id);
-        Film film = null;
-        List<Genre> genres = new ArrayList<>();
-        for (DualElement<Film, Genre> filmGenre : rowList) {
-            if (film == null) {
-                film = filmGenre.getFirst();
+        String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID where f.FILM_ID = ?";
+        String sqlGenre = "SELECT fg.FILM_ID, g.* FROM FILM_GENRE AS fg LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
+        Film film = jdbcTemplate.queryForObject(sqlFilms, getFilmRatingMapper(), id);
+        List<Map<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper());
+        Long filmId = film.getId();
+        for (Map<Long, Genre> longGenres : genres) {
+            if (longGenres.containsKey(filmId)) {
+                film.getGenres().add(longGenres.get(filmId));
             }
-            if (filmGenre.getSecond().getName() == null) {
-                return film;
-            }
-            genres.add(filmGenre.getSecond());
         }
-        film.setGenres(genres);
         return film;
     }
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
-        String sql = "SELECT f.*, g.* , r.RATING " +
-                "FROM film f " +
-                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genre g ON fg.genre_id = g.genre_id " +
-                "JOIN RATING AS r ON f.RATING_ID = r.RATING_ID " +
-                "ORDER BY f.likes DESC LIMIT ?";
-        List<DualElement<Film, Genre>> rowList = jdbcTemplate.query(sql, getFilmTempMapper(), count);
-        Film film = new Film();
-        List<Genre> genres = new ArrayList<>();
-        return getFilms(rowList, film, genres);
+        String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID ORDER BY f.likes DESC LIMIT ?";
+        List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper(), count);
+        return getFilms(films);
+    }
+
+    private List<Film> getFilms(List<Film> films) {
+        String sqlGenre = "SELECT fg.FILM_ID, g.* FROM FILM_GENRE AS fg LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
+        List<Map<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper());
+        for (Film film : films) {
+            Long filmId = film.getId();
+            for (Map<Long, Genre> longGenres : genres) {
+                if (longGenres.containsKey(filmId)) {
+                    film.getGenres().add(longGenres.get(filmId));
+                }
+            }
+        }
+        return films;
     }
 
     @Override
@@ -159,40 +150,22 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sqlRate, filmId);
     }
 
-    private List<Film> getFilms(List<DualElement<Film, Genre>> rowList, Film film, List<Genre> genres) {
-        List<Film> films = new ArrayList<>();
-        for (DualElement<Film, Genre> filmGenre : rowList) {
-            if (filmGenre.getFirst() == null) {
-                throw new EntityNotFoundException("В базе нет фильмов");
-            }
-            if (!film.equals(filmGenre.getFirst())) {
-                film = filmGenre.getFirst();
-                films.add(film);
-            }
-            if (filmGenre.getSecond().getName() != null && film.getGenres().isEmpty()) {
-                genres = new ArrayList<>();
-                film.setGenres(genres);
-            }
-            if (filmGenre.getSecond() != null) {
-                genres.add(filmGenre.getSecond());
-            }
-        }
-        return films;
+    private static RowMapper<Film> getFilmRatingMapper() {
+        return (rs, num) -> new Film(rs.getLong("film_id"),
+                rs.getString("title"),
+                rs.getString("description"),
+                rs.getDate("release_date").toLocalDate(),
+                rs.getLong("duration"),
+                new Rating(rs.getInt("rating_id"),
+                        rs.getString("rating")),
+                rs.getInt("likes"));
     }
 
-    private static RowMapper<DualElement<Film, Genre>> getFilmTempMapper() {
-        return (rs, rowNum) -> {
-            Film film = new Film(
-                    rs.getLong("film_id"),
-                    rs.getString("title"),
-                    rs.getString("description"),
-                    rs.getDate("release_date").toLocalDate(),
-                    rs.getLong("duration"),
-                    new Rating(rs.getInt("rating_id"),
-                            rs.getString("rating")),
-                    rs.getInt("likes"));
+    private static RowMapper<Map<Long, Genre>> getFilmGenreMapper() {
+        return (rs, num) -> {
+            Long filmId = rs.getLong("film_id");
             Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("genre"));
-            return new DualElement<Film, Genre>(film, genre);
+            return Map.of(filmId, genre);
         };
     }
 }
