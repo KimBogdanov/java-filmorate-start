@@ -78,7 +78,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         isExist(film.getId());
         String sqlQuery = "UPDATE film SET " +
-                "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ?" +
+                "TITLE = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ? , RATING_ID = ? " +
                 "WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQuery,
                 film.getName(),
@@ -87,13 +87,26 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
-        String sqlDelete = "DELETE FROM film_genre WHERE FILM_ID = ?";
-        jdbcTemplate.update(sqlDelete, film.getId());
-        if (!film.getGenres().isEmpty()) {
-            List<Genre> genres = new ArrayList<>(film.getGenres());
-            saveGenresToFilm(film.getId(), genres);
+        String sqlGenre = "SELECT fg.FILM_ID, g.* " +
+                "FROM FILM_GENRE AS fg " +
+                "LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID WHERE fg.FILM_ID = ?";
+        List<Pair<Long, Genre>> idFilmGenres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper(), film.getId());
+        List<Genre> genres = extractGenres(idFilmGenres);
+        List<Genre> genresUpdateFilm = film.getGenres();
+        if (!genres.containsAll(genresUpdateFilm) || !genresUpdateFilm.containsAll(genres)) {
+            String sqlDelete = "DELETE FROM film_genre WHERE FILM_ID = ?";
+            jdbcTemplate.update(sqlDelete, film.getId());
+            if (!film.getGenres().isEmpty()) {
+                saveGenresToFilm(film.getId(), genresUpdateFilm);
+            }
         }
         return film;
+    }
+
+    private List<Genre> extractGenres(List<Pair<Long, Genre>> idFilmGenres) {
+        return idFilmGenres.stream()
+                .map(Pair::getRight)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -106,13 +119,8 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM FILM_GENRE AS fg " +
                 "LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID WHERE fg.FILM_ID = ?";
         Film film = jdbcTemplate.queryForObject(sqlFilms, getFilmRatingMapper(), id);
-        List<Pair<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper(), id);
-        Long filmId = film.getId();
-        for (Pair<Long, Genre> longGenres : genres) {
-            if (longGenres.getLeft().equals(filmId)) {
-                film.getGenres().add(longGenres.getRight());
-            }
-        }
+        List<Pair<Long, Genre>> idFilmGenres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper(), id);
+        film.getGenres().addAll(extractGenres(idFilmGenres));
         return film;
     }
 
@@ -137,17 +145,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private List<Film> getFilms(List<Film> films, List<Pair<Long, Genre>> genres) {
-
         Map<Long, List<Genre>> genresByFilmId = genres.stream()
                 .collect(Collectors.groupingBy(Pair::getLeft,
                         Collectors.mapping(Pair::getRight, Collectors.toList())));
-
         films.forEach(film -> film.getGenres()
                 .addAll(genresByFilmId.getOrDefault(film.getId(), Collections.emptyList())));
-
         return films;
     }
-
 
     @Override
     public boolean isExist(Long id) {
