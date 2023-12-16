@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.*;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -101,11 +102,11 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM FILM_GENRE AS fg " +
                 "LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID WHERE fg.FILM_ID = ?";
         Film film = jdbcTemplate.queryForObject(sqlFilms, getFilmRatingMapper(), id);
-        List<Map<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper(), id);
+        List<Pair<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper(), id);
         Long filmId = film.getId();
-        for (Map<Long, Genre> longGenres : genres) {
-            if (longGenres.containsKey(filmId)) {
-                film.getGenres().add(longGenres.get(filmId));
+        for (Pair<Long, Genre> longGenres : genres) {
+            if (longGenres.getLeft().equals(filmId)) {
+                film.getGenres().add(longGenres.getRight());
             }
         }
         return film;
@@ -126,12 +127,12 @@ public class FilmDbStorage implements FilmStorage {
 
     private List<Film> getFilms(List<Film> films) {
         String sqlGenre = "SELECT fg.FILM_ID, g.* FROM FILM_GENRE AS fg LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
-        List<Map<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper());
+        List<Pair<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper());
         for (Film film : films) {
             Long filmId = film.getId();
-            for (Map<Long, Genre> longGenres : genres) {
-                if (longGenres.containsKey(filmId)) {
-                    film.getGenres().add(longGenres.get(filmId));
+            for (Pair<Long, Genre> longGenres : genres) {
+                if (longGenres.getLeft().equals(filmId)) {
+                    film.getGenres().add(longGenres.getRight());
                 }
             }
         }
@@ -166,11 +167,11 @@ public class FilmDbStorage implements FilmStorage {
                         rs.getString("rating")));
     }
 
-    private static RowMapper<Map<Long, Genre>> getFilmGenreMapper() {
+    private static RowMapper<Pair<Long, Genre>> getFilmGenreMapper() {
         return (rs, num) -> {
             Long filmId = rs.getLong("film_id");
             Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("genre"));
-            return Map.of(filmId, genre);
+            return Pair.of(filmId, genre);
         };
     }
 }
