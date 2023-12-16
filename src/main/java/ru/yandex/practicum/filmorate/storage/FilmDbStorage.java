@@ -28,8 +28,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilms() {
         String sqlFilms = "Select f.*, r.* FROM film as f left join RATING R on f.RATING_ID = R.RATING_ID";
+        String sqlGenres = "SELECT fg.FILM_ID, g.* FROM FILM_GENRE AS fg LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
         List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper());
-        return getFilms(films);
+        List<Pair<Long, Genre>> genres = jdbcTemplate.query(sqlGenres, getFilmGenreMapper());
+        return getFilms(films, genres);
     }
 
     @Override
@@ -123,13 +125,18 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(fl.PERSON_ID) " +
                 "DESC LIMIT ?";
+        String sqlGenres = "SELECT fg.FILM_ID, g.* " +
+                "FROM FILM_GENRE AS fg " +
+                "LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID " +
+                "WHERE fg.FILM_ID IN (SELECT f.FILM_ID " +
+                "FROM FILM AS f Left JOIN FILM_LIKE FL on f.FILM_ID = FL.FILM_ID " +
+                "GROUP BY f.FILM_ID ORDER BY COUNT(fl.PERSON_ID) DESC  LIMIT ?)";
         List<Film> films = jdbcTemplate.query(sqlFilms, getFilmRatingMapper(), count);
-        return getFilms(films);
+        List<Pair<Long, Genre>> genres = jdbcTemplate.query(sqlGenres, getFilmGenreMapper(), count);
+        return getFilms(films, genres);
     }
 
-    private List<Film> getFilms(List<Film> films) {
-        String sqlGenre = "SELECT fg.FILM_ID, g.* FROM FILM_GENRE AS fg LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
-        List<Pair<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper());
+    private List<Film> getFilms(List<Film> films, List<Pair<Long, Genre>> genres) {
 
         Map<Long, List<Genre>> genresByFilmId = genres.stream()
                 .collect(Collectors.groupingBy(Pair::getLeft,
