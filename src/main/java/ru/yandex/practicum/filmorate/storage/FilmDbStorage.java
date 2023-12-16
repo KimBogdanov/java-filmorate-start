@@ -12,8 +12,10 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -128,16 +130,17 @@ public class FilmDbStorage implements FilmStorage {
     private List<Film> getFilms(List<Film> films) {
         String sqlGenre = "SELECT fg.FILM_ID, g.* FROM FILM_GENRE AS fg LEFT JOIN GENRE AS g ON fg.GENRE_ID = g.GENRE_ID";
         List<Pair<Long, Genre>> genres = jdbcTemplate.query(sqlGenre, getFilmGenreMapper());
-        for (Film film : films) {
-            Long filmId = film.getId();
-            for (Pair<Long, Genre> longGenres : genres) {
-                if (longGenres.getLeft().equals(filmId)) {
-                    film.getGenres().add(longGenres.getRight());
-                }
-            }
-        }
+
+        Map<Long, List<Genre>> genresByFilmId = genres.stream()
+                .collect(Collectors.groupingBy(Pair::getLeft,
+                        Collectors.mapping(Pair::getRight, Collectors.toList())));
+
+        films.forEach(film -> film.getGenres()
+                .addAll(genresByFilmId.getOrDefault(film.getId(), Collections.emptyList())));
+
         return films;
     }
+
 
     @Override
     public boolean isExist(Long id) {
