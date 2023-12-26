@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -20,42 +22,62 @@ public class FilmService {
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getPopularFilms();
+        return filmStorage.getFilms();
     }
 
     public Film createFilm(Film film) {
+        List<Genre> genres = film.getGenres();
+        List<Genre> uniqueGenres = genres.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        film.setGenres(uniqueGenres);
         return filmStorage.createFilm(film);
     }
 
     public Film updateFilm(Film film) {
-        if (!filmStorage.isExist(film.getId())) {
-            throw new EntityNotFoundException("Не найден film c id " + film.getId());
+        if (isExist(film.getId())) {
+            throw new EntityNotFoundException("Фильма с id " + film.getId() + " нет в базе");
         }
+        List<Genre> genres = film.getGenres();
+        List<Genre> uniqueGenres = genres.stream()
+                .distinct()
+                .collect(Collectors.toList());
+        film.setGenres(uniqueGenres);
         return filmStorage.updateFilm(film);
     }
 
     public Film getFilm(Long id) {
-        if (!filmStorage.isExist(id)) {
-            throw new EntityNotFoundException("Не найден film c id " + id);
+        if (isExist(id)) {
+            throw new EntityNotFoundException("Фильма с id " + id + " нет в базе");
         }
         return filmStorage.getFilmById(id);
     }
 
-    public Film addLike(Long id, Long userId) {
-        Film film = getFilm(id);
-        userService.getUserById(userId);
-        film.addLike(userId);
-        return filmStorage.updateFilm(film);
+    public void addLike(Long id, Long userId) {
+        if (isExist(id)) {
+            throw new EntityNotFoundException("Фильма с id " + id + " нет в базе");
+        }
+        if (userService.isExist(userId)) {
+            throw new EntityNotFoundException("User с id " + userId + " нет в базе");
+        }
+        filmStorage.addLike(id, userId);
     }
 
-    public Film deleteLike(Long id, Long userId) {
-        Film film = getFilm(id);
-        userService.getUserById(userId);
-        film.deleteLike(userId);
-        return filmStorage.updateFilm(film);
+    public void deleteLike(Long id, Long userId) {
+        if (isExist(id)) {
+            throw new EntityNotFoundException("Фильма с id " + id + " нет в базе");
+        }
+        if (userService.isExist(userId)) {
+            throw new EntityNotFoundException("User с id " + userId + " нет в базе");
+        }
+        filmStorage.deleteLike(id, userId);
     }
 
     public List<Film> getPopularFilms(Integer count) {
         return filmStorage.getPopularFilms(count);
+    }
+
+    public boolean isExist(Long id) {
+        return filmStorage.isExist(id);
     }
 }

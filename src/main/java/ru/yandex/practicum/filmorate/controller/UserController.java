@@ -28,48 +28,47 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) {
-        log.info("getUser " + id);
+        log.info("getUser id {} ", id);
         return userService.getUser(id);
     }
 
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable Long id) {
-        log.info("getFriends for user " + id);
+        log.info("getFriends for user {} ", id);
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getMutualFriends(@PathVariable Long id,
                                        @PathVariable Long otherId) {
-        log.info("getMutualFriends id " + id + "id " + otherId);
+        log.info("getMutualFriends id {} otherId {} ", id, otherId);
         return userService.getMutualFriends(id, otherId);
     }
 
     @PostMapping()
     public User createUser(@Valid @RequestBody User user) {
         User newUser = userService.createUser(user);
-        log.info("createUser " + newUser.getId());
+        log.info("createUser id {} ", newUser.getId());
         return newUser;
     }
 
     @PutMapping()
     public User updateUser(@Valid @RequestBody User user) {
-        log.info("updateUser " + user.getId());
+        log.info("updateUser {} ", user.getId());
         return userService.updateUser(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable Long id,
+    public void addFriend(@PathVariable Long id,
                           @PathVariable Long friendId) {
-        log.info("addFriend " + id + "id " + friendId);
-        User user = userService.addFriend(id, friendId);
-        return user;
+        log.info("addFriend id {} friends id {} ", id, friendId);
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable Long id,
+    public void deleteFriend(@PathVariable Long id,
                              @PathVariable Long friendId) {
-        log.info("deleteFriend " + id + "id " + friendId);
-        return userService.deleteFriend(id, friendId);
+        log.info("user id {} delete friend id {}", id, friendId);
+        userService.deleteFriend(id, friendId);
     }
 }

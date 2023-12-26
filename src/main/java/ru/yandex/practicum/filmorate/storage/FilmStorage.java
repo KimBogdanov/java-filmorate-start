@@ -5,7 +5,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.List;
 
 public interface FilmStorage {
-    public List<Film> getPopularFilms();
+    public List<Film> getFilms();
 
     Film createFilm(Film film);
 
@@ -16,4 +16,8 @@ public interface FilmStorage {
     boolean isExist(Long id);
 
     List<Film> getPopularFilms(Integer count);
+
+    void addLike(Long filmId, Long userId);
+
+    void deleteLike(Long filmId, Long userId);
 }
