@@ -22,7 +22,6 @@ public class Film {
     private long duration;
     private Rating mpa;
     private List<Genre> genres = new ArrayList<>();
-//    private int likes = 0;
 
     public Film() {
     }
